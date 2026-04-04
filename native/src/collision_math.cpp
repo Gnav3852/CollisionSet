@@ -3,6 +3,9 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#if defined(ORACLE_ZENO_DEBUG) && ORACLE_ZENO_DEBUG
+#include <iostream>
+#endif
 
 namespace oracle {
 
@@ -26,28 +29,32 @@ std::optional<std::pair<double, WallAxis>> earliest_wall_collision_time(
 
   if (v.x < -kEps) {
     const double T = t_ref + (b.minX + r - p.x) / v.x;
-    if (T > t_min - kTimeEps && T < best_t) {
+    const double dt = T - t_ref;
+    if (T > t_min - kTimeEps && dt >= kMinPairDt && T < best_t) {
       best_t = T;
       best_wall = WallAxis::Left;
     }
   }
   if (v.x > kEps) {
     const double T = t_ref + (b.maxX - r - p.x) / v.x;
-    if (T > t_min - kTimeEps && T < best_t) {
+    const double dt = T - t_ref;
+    if (T > t_min - kTimeEps && dt >= kMinPairDt && T < best_t) {
       best_t = T;
       best_wall = WallAxis::Right;
     }
   }
   if (v.y < -kEps) {
     const double T = t_ref + (b.minY + r - p.y) / v.y;
-    if (T > t_min - kTimeEps && T < best_t) {
+    const double dt = T - t_ref;
+    if (T > t_min - kTimeEps && dt >= kMinPairDt && T < best_t) {
       best_t = T;
       best_wall = WallAxis::Top;
     }
   }
   if (v.y > kEps) {
     const double T = t_ref + (b.maxY - r - p.y) / v.y;
-    if (T > t_min - kTimeEps && T < best_t) {
+    const double dt = T - t_ref;
+    if (T > t_min - kTimeEps && dt >= kMinPairDt && T < best_t) {
       best_t = T;
       best_wall = WallAxis::Bottom;
     }
@@ -69,6 +76,15 @@ std::optional<double> earliest_pair_collision_time(Vec2 p1,
                                                      double t_min) {
   const Vec2 P{p2.x - p1.x, p2.y - p1.y};
   const Vec2 V{v2.x - v1.x, v2.y - v1.y};
+  // Not approaching: relative velocity does not reduce separation (Zeno / overlap churn).
+  if (dot(V, P) >= -kEps) {
+    return std::nullopt;
+  }
+  const double v_rel_sq = len_sq(V);
+  const double v_min_sq = kMinRelativeSpeed * kMinRelativeSpeed;
+  if (v_rel_sq < v_min_sq) {
+    return std::nullopt;
+  }
   const double R = r1 + r2;
   const double R2 = R * R;
 
@@ -86,6 +102,9 @@ std::optional<double> earliest_pair_collision_time(Vec2 p1,
       return std::nullopt;
     }
     const double root = -c / b;
+#if defined(ORACLE_ZENO_DEBUG) && ORACLE_ZENO_DEBUG
+    std::cout << "[QUAD linear] b=" << b << " c=" << c << " root=" << root << std::endl;
+#endif
     if (root > t_min - t_ref - kTimeEps && root < std::numeric_limits<double>::infinity()) {
       dt = root;
     }
@@ -97,6 +116,10 @@ std::optional<double> earliest_pair_collision_time(Vec2 p1,
     const double sqrt_d = disc <= 0 ? 0 : std::sqrt(disc);
     const double t1 = (-b - sqrt_d) / (2 * a);
     const double t2 = (-b + sqrt_d) / (2 * a);
+#if defined(ORACLE_ZENO_DEBUG) && ORACLE_ZENO_DEBUG
+    std::cout << "[QUAD] disc=" << disc << " t1=" << t1 << " t2=" << t2 << " a=" << a << " b=" << b << " c=" << c
+              << " t_min-t_ref=" << (t_min - t_ref) << std::endl;
+#endif
     double best = std::numeric_limits<double>::infinity();
     if (t1 > t_min - t_ref - kTimeEps && std::isfinite(t1)) {
       best = std::min(best, t1);
@@ -106,13 +129,19 @@ std::optional<double> earliest_pair_collision_time(Vec2 p1,
     }
     if (best < std::numeric_limits<double>::infinity()) {
       dt = best;
+#if defined(ORACLE_ZENO_DEBUG) && ORACLE_ZENO_DEBUG
+      std::cout << "[QUAD] chosen_dt=" << *dt << " (from quadratic branch)" << std::endl;
+#endif
     }
   }
 
-  if (!dt.has_value() || *dt < kTimeEps) {
+  if (!dt.has_value() || *dt < kMinPairDt) {
     return std::nullopt;
   }
   const double T = t_ref + *dt;
+#if defined(ORACLE_ZENO_DEBUG) && ORACLE_ZENO_DEBUG
+  std::cout << "[QUAD] final dt=" << *dt << " T=" << T << " t_ref=" << t_ref << std::endl;
+#endif
   if (T < t_min - kTimeEps) {
     return std::nullopt;
   }
@@ -127,21 +156,40 @@ Vec2 normalize(Vec2 v) {
   return {v.x / L, v.y / L};
 }
 
-void resolve_elastic_pair(Particle& a, Particle& b, Vec2 n, double restitution) {
-  const double rvx = a.vel_x - b.vel_x;
-  const double rvy = a.vel_y - b.vel_y;
-  const double vel_along_n = rvx * n.x + rvy * n.y;
-  if (vel_along_n >= -kEps) {
+void resolve_elastic_pair(Particle& a, Particle& b, double restitution) {
+  const double dx = b.pos_x - a.pos_x;
+  const double dy = b.pos_y - a.pos_y;
+  const double dvx = b.vel_x - a.vel_x;
+  const double dvy = b.vel_y - a.vel_y;
+  const double dv_dr = dvx * dx + dvy * dy;
+  // Same approaching convention as earliest_pair_collision_time: dot(V,P) < 0 with P = p2-p1, V = v2-v1.
+  if (dv_dr >= -kEps) {
     return;
   }
-  const double inv_mass_sum = 1.0 / a.mass + 1.0 / b.mass;
-  const double j = -(1.0 + restitution) * vel_along_n / inv_mass_sum;
-  const double jx = j * n.x;
-  const double jy = j * n.y;
-  a.vel_x += jx / a.mass;
-  a.vel_y += jy / a.mass;
-  b.vel_x -= jx / b.mass;
-  b.vel_y -= jy / b.mass;
+  const double dist = std::hypot(dx, dy);
+  const double radius_sum = a.radius + b.radius;
+  double nx = 1.0;
+  double ny = 0.0;
+  if (dist >= kEps) {
+    nx = dx / dist;
+    ny = dy / dist;
+  }
+  const double inv_m_sum = a.mass + b.mass;
+  if (inv_m_sum < kEps || radius_sum < kEps) {
+    return;
+  }
+  const double J = (1.0 + restitution) * a.mass * b.mass * dv_dr / (radius_sum * inv_m_sum);
+  const double Jx = (J * dx) / radius_sum;
+  const double Jy = (J * dy) / radius_sum;
+  a.vel_x += Jx / a.mass;
+  a.vel_y += Jy / a.mass;
+  b.vel_x -= Jx / b.mass;
+  b.vel_y -= Jy / b.mass;
+  const double h = 0.5 * kPostCollisionSeparation;
+  a.pos_x -= nx * h;
+  a.pos_y -= ny * h;
+  b.pos_x += nx * h;
+  b.pos_y += ny * h;
 }
 
 }  // namespace oracle

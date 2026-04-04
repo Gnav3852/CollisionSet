@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.16)
 project(oracle_wasm CXX)
 
+option(ORACLE_ZENO_DEBUG "Enable Zeno circuit breaker + verbose std::cout diagnostics (noisy WASM)" OFF)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
@@ -17,6 +19,10 @@ add_executable(oracle_wasm
 
 target_include_directories(oracle_wasm PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
+if(ORACLE_ZENO_DEBUG)
+  target_compile_definitions(oracle_wasm PRIVATE ORACLE_ZENO_DEBUG=1)
+endif()
+
 set_target_properties(oracle_wasm PROPERTIES OUTPUT_NAME "oracle")
 
 target_link_options(oracle_wasm PRIVATE
@@ -26,7 +32,7 @@ target_link_options(oracle_wasm PRIVATE
   "-sENVIRONMENT=web"
   "-sALLOW_MEMORY_GROWTH=1"
   "-sEXPORTED_RUNTIME_METHODS=['ccall','cwrap','HEAPU8','HEAP32','HEAPF64']"
-  "SHELL:-sEXPORTED_FUNCTIONS=[_malloc,_free,_oracle_create,_oracle_destroy,_oracle_set_particle_count,_oracle_set_particle,_oracle_bootstrap,_oracle_get_sim_time,_oracle_get_particle_count,_oracle_get_capacity,_oracle_particles_ptr,_oracle_step,_oracle_heap_size,_oracle_peek_valid,_oracle_peek_time,_oracle_peek_kind,_oracle_peek_a,_oracle_peek_b,_oracle_peek_wall,_oracle_peek_count_a,_oracle_peek_count_b,_oracle_heap_export]"
+  "SHELL:-sEXPORTED_FUNCTIONS=[_malloc,_free,_oracle_create,_oracle_destroy,_oracle_set_particle_count,_oracle_set_particle,_oracle_bootstrap,_oracle_get_sim_time,_oracle_get_particle_count,_oracle_get_capacity,_oracle_particles_ptr,_oracle_step,_oracle_purge_heap,_oracle_peek_impact,_oracle_heap_size,_oracle_peek_valid,_oracle_peek_time,_oracle_peek_kind,_oracle_peek_a,_oracle_peek_b,_oracle_peek_wall,_oracle_peek_count_a,_oracle_peek_count_b,_oracle_heap_export]"
 )
 
 set(WASM_OUT "${CMAKE_CURRENT_SOURCE_DIR}/../src/wasm")

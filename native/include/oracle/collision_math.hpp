@@ -6,6 +6,9 @@
 
 namespace oracle {
 
+/** Tiny outward separation after resolve to avoid zero-Δt re-hit from float error (pixel arena). */
+inline constexpr double kPostCollisionSeparation = 1e-4;
+
 std::optional<std::pair<double, WallAxis>> earliest_wall_collision_time(
     Vec2 p,
     Vec2 v,
@@ -26,6 +29,7 @@ std::optional<double> earliest_pair_collision_time(Vec2 p1,
 
 Vec2 normalize(Vec2 v);
 
-void resolve_elastic_pair(Particle& a, Particle& b, Vec2 n, double restitution = 1.0);
+/** Elastic impulse from positions/velocities; applies half `kPostCollisionSeparation` nudge along line of centers. */
+void resolve_elastic_pair(Particle& a, Particle& b, double restitution = 1.0);
 
 }  // namespace oracle

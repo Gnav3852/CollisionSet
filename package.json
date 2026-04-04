@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:emsdk": "bash scripts/dev-with-emsdk.sh",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "build:wasm": "bash scripts/build-wasm.sh"
+    "build:wasm": "bash scripts/build-wasm.sh",
+    "build:wasm:debug": "ORACLE_ZENO_DEBUG=1 bash scripts/build-wasm.sh"
   },
   "devDependencies": {
     "typescript": "~5.7.2",

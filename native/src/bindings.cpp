@@ -105,6 +105,29 @@ int oracle_step(void* ctx, int max_steps) {
 }
 
 ORACLE_API
+void oracle_purge_heap(void* ctx) {
+  if (!ctx) {
+    return;
+  }
+  auto* o = static_cast<OracleEngine*>(ctx);
+  o->purge_events_before(o->sim_time());
+}
+
+ORACLE_API
+int oracle_peek_impact(void* ctx, double* out_x, double* out_y) {
+  if (!ctx || !out_x || !out_y) {
+    return 0;
+  }
+  const auto hit = static_cast<OracleEngine*>(ctx)->peek_next_impact();
+  if (!hit.has_value()) {
+    return 0;
+  }
+  *out_x = hit->x;
+  *out_y = hit->y;
+  return 1;
+}
+
+ORACLE_API
 int oracle_heap_size(void* ctx) {
   if (!ctx) {
     return 0;
@@ -117,7 +140,7 @@ int oracle_peek_valid(void* ctx) {
   if (!ctx) {
     return 0;
   }
-  return static_cast<OracleEngine*>(ctx)->heap_empty() ? 0 : 1;
+  return static_cast<OracleEngine*>(ctx)->peek_next().has_value() ? 1 : 0;
 }
 
 ORACLE_API

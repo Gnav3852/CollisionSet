@@ -21,6 +21,14 @@ npm run dev
 
 Open the URL Vite prints (usually `http://localhost:5173`).
 
+If **Emscripten** lives as a sibling folder `../emsdk` (same parent directory as this repo), you can start the dev server with the SDK on your `PATH` in one step:
+
+```bash
+npm run dev:emsdk
+```
+
+That runs [`scripts/dev-with-emsdk.sh`](scripts/dev-with-emsdk.sh) (sources `../emsdk/emsdk_env.sh`, then `npm run dev`). If emsdk is elsewhere, set `EMSDK_ENV` to the full path of `emsdk_env.sh` before running the script.
+
 The repo includes a small **stub** `src/wasm/oracle.js` so the app loads before you build native code. For the real physics core, build WASM once (see below).
 
 ## Build the WASM Oracle (optional first time)
@@ -39,6 +47,7 @@ This writes `src/wasm/oracle.js` and `src/wasm/oracle.wasm`. Details: [`native/R
 | Command | Description |
 |--------|-------------|
 | `npm run dev` | Dev server with HMR |
+| `npm run dev:emsdk` | Source `../emsdk/emsdk_env.sh`, then dev server (see script) |
 | `npm run build` | Typecheck + production bundle (`dist/`) |
 | `npm run preview` | Serve `dist/` locally |
 | `npm run build:wasm` | Compile C++ → `src/wasm/` (requires `emcmake`) |

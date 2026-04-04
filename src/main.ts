@@ -25,9 +25,21 @@ const bounds = {
   maxY: H - padding,
 };
 
+/** ~4 s to cross inner box width at max initial speed (atmospheric drift). */
+const innerWidth = bounds.maxX - bounds.minX;
+const vMax = innerWidth / 4;
+const rawVel = [
+  { vx: 200, vy: 60 },
+  { vx: -190, vy: -40 },
+] as const;
+let maxSpeed = 0;
+for (const v of rawVel) {
+  maxSpeed = Math.max(maxSpeed, Math.hypot(v.vx, v.vy));
+}
+const vScale = maxSpeed > 0 ? vMax / maxSpeed : 1;
 const particleSeed = [
-  { x: 160, y: 280, vx: 200, vy: 60, radius: 22, mass: 1 },
-  { x: 640, y: 300, vx: -190, vy: -40, radius: 22, mass: 1 },
+  { x: 160, y: 280, vx: rawVel[0].vx * vScale, vy: rawVel[0].vy * vScale, radius: 22, mass: 1 },
+  { x: 640, y: 300, vx: rawVel[1].vx * vScale, vy: rawVel[1].vy * vScale, radius: 22, mass: 1 },
 ];
 
 const MAX_QUEUE_ROWS = 40;
@@ -151,14 +163,46 @@ function drawParticles(displayTime: number): void {
   for (let i = 0; i < n; i++) {
     const pos = o.posAt(i, displayTime);
     const r = o.radiusAt(i);
+    const { vx, vy } = o.velocityAt(i);
+    const speed = Math.hypot(vx, vy);
+    const t = vMax > 1e-9 ? Math.min(1, speed / vMax) : 0;
+    const light = 38 + t * 32;
     ctx.beginPath();
     ctx.arc(pos.x, pos.y, r, 0, Math.PI * 2);
-    ctx.fillStyle = `hsl(${(i * 67) % 360} 55% 52%)`;
+    ctx.fillStyle = `hsl(${(i * 67) % 360} 58% ${light}%)`;
     ctx.fill();
     ctx.strokeStyle = "rgba(0,0,0,0.25)";
     ctx.lineWidth = 1;
     ctx.stroke();
   }
+}
+
+/** One segment from oracle state at sim_time to next valid impact (engine-derived). */
+function drawCausality(simTime: number): void {
+  const o = oracle!;
+  const ev = o.peekNextEvent();
+  const impact = o.peekNextImpact();
+  if (!ev || !impact) {
+    return;
+  }
+  let fx: number;
+  let fy: number;
+  if (ev.kind === "wall") {
+    const p = o.posAt(ev.particle, simTime);
+    fx = p.x;
+    fy = p.y;
+  } else {
+    const pa = o.posAt(ev.a, simTime);
+    const pb = o.posAt(ev.b, simTime);
+    fx = 0.5 * (pa.x + pb.x);
+    fy = 0.5 * (pa.y + pb.y);
+  }
+  ctx.beginPath();
+  ctx.moveTo(fx, fy);
+  ctx.lineTo(impact.x, impact.y);
+  ctx.strokeStyle = "rgba(200, 220, 255, 0.45)";
+  ctx.lineWidth = 1.5;
+  ctx.stroke();
 }
 
 function formatNext(ev: UiPeekEvent | undefined): string {
@@ -192,31 +236,8 @@ function refreshQueueTable(): void {
   queueBody.appendChild(frag);
 }
 
-function frame(now: number): void {
-  syncStepsSweepLabels();
-
-  if (!oracle) {
-    return;
-  }
-
-  if (!pauseSim.checked) {
-    oracle.stepCollisions(stepsPerFrame());
-  }
-
-  const sim = oracle.sim_time;
-  if (sim !== prevOracleSim) {
-    prevOracleSim = sim;
-    phaseStartWall = now;
-    phaseStartSim = sim;
-    heldAutoFrac = 0;
-    const next = oracle.peekNextTime();
-    phaseEndSim =
-      next !== null && next > sim + 1e-9 ? next : sim + 0.12;
-    if (!scrubLock.checked) {
-      scrubSlider.value = "0";
-    }
-  }
-
+/** Sweep / scrub clock along the current phase segment [phaseStartSim, phaseEndSim]. */
+function computeFracAndDisplayTime(now: number): { frac: number; displayTime: number } {
   const span = Math.max(phaseEndSim - phaseStartSim, 1e-9);
   const segMs = sweepSeconds() * 1000;
   let frac: number;
@@ -234,19 +255,85 @@ function frame(now: number): void {
     scrubVal.textContent = `auto ${(frac * 100).toFixed(0)}%`;
     scrubSlider.value = String(Math.round(frac * 1000));
   }
+  return { frac, displayTime: phaseStartSim + frac * span };
+}
 
-  const displayTime = phaseStartSim + frac * span;
+function frame(now: number): void {
+  syncStepsSweepLabels();
+
+  if (!oracle) {
+    return;
+  }
+
+  const simAtFrameStart = oracle.sim_time;
+  if (scrubLock.checked || simAtFrameStart !== prevOracleSim) {
+    oracle.purgeHeapPastSimTime();
+  }
+  if (simAtFrameStart !== prevOracleSim) {
+    prevOracleSim = simAtFrameStart;
+    phaseStartWall = now;
+    phaseStartSim = simAtFrameStart;
+    heldAutoFrac = 0;
+    const next = oracle.peekNextTime();
+    phaseEndSim =
+      next !== null && next > simAtFrameStart + 1e-9 ? next : simAtFrameStart + 0.12;
+    if (!scrubLock.checked) {
+      scrubSlider.value = "0";
+    }
+  }
+
+  let { displayTime } = computeFracAndDisplayTime(now);
+
+  if (!pauseSim.checked) {
+    const maxBurst = Math.max(1, stepsPerFrame() * 8);
+    let burst = 0;
+    const eps = 1e-10;
+    while (burst < maxBurst) {
+      const simT = oracle.sim_time;
+      if (displayTime <= simT + eps) {
+        break;
+      }
+      const nextT = oracle.peekNextTime();
+      if (nextT === null || nextT > displayTime + 1e-9) {
+        break;
+      }
+      oracle.stepCollisions(1);
+      burst++;
+    }
+  }
+
+  const sim = oracle.sim_time;
+  if (scrubLock.checked || sim !== prevOracleSim) {
+    oracle.purgeHeapPastSimTime();
+  }
+  let phaseResetAfterStep = false;
+  if (sim !== prevOracleSim) {
+    phaseResetAfterStep = true;
+    prevOracleSim = sim;
+    phaseStartWall = now;
+    phaseStartSim = sim;
+    heldAutoFrac = 0;
+    const next = oracle.peekNextTime();
+    phaseEndSim = next !== null && next > sim + 1e-9 ? next : sim + 0.12;
+    if (!scrubLock.checked) {
+      scrubSlider.value = "0";
+    }
+  }
+  if (phaseResetAfterStep) {
+    displayTime = computeFracAndDisplayTime(now).displayTime;
+  }
 
   ctx.clearRect(0, 0, W, H);
   drawBox();
   drawParticles(displayTime);
+  drawCausality(sim);
 
   hud.innerHTML = [
     `sim_time: <strong>${sim.toFixed(4)}</strong>`,
     `display: <strong>${displayTime.toFixed(4)}</strong>`,
     `next: ${formatNext(oracle.peekNextEvent())}`,
     `heap: ${oracle.heapSize}`,
-    `· C++ WASM`,
+    `· lockstep · C++ WASM`,
   ].join(" · ");
 
   refreshQueueTable();

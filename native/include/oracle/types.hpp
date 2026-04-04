@@ -6,6 +6,12 @@ namespace oracle {
 
 inline constexpr double kEps = 1e-10;
 inline constexpr double kTimeEps = 1e-7;
+/** Minimum positive pair/wall delta-t to schedule (quadratic / micro-event floor). */
+inline constexpr double kMinPairDt = 1e-7;
+/** Do not enqueue events with delta-t below this (Zeno / numerical churn). */
+inline constexpr double kMinCollisionScheduleDt = 1e-9;
+/** Skip pair prediction when relative speed is below this (static / numerical noise). */
+inline constexpr double kMinRelativeSpeed = 1e-5;
 
 struct Vec2 {
   double x = 0;

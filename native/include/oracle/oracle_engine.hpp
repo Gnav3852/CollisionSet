@@ -36,8 +36,15 @@ class OracleEngine {
   bool heap_empty() const { return heap_.empty(); }
   std::size_t heap_size() const { return heap_.size(); }
 
+  /** Earliest heap event that passes validate_event (ignores stale roots). */
   std::optional<SimEvent> peek_next() const;
   std::optional<double> peek_next_time() const;
+
+  /** Drop heap entries strictly before sim time (stale ghosts); keeps e.time >= t_cut - kTimeEps. */
+  void purge_events_before(double t_cut);
+
+  /** Contact / impact point in world space for peek_next(), or nullopt if none. */
+  std::optional<Vec2> peek_next_impact() const;
 
   std::vector<SimEvent> get_queued_sorted() const { return heap_.snapshot_sorted(); }
 
@@ -50,6 +57,8 @@ class OracleEngine {
   double sim_time_ = 0;
   std::vector<Particle> particles_;
   EventHeap heap_;
+  /** Consecutive sub-microsecond applied event steps (ORACLE_ZENO_DEBUG only). */
+  int zeno_micro_streak_ = 0;
 
   Vec2 pos_at(int i, double t) const;
 

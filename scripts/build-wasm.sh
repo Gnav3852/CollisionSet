@@ -8,5 +8,9 @@ if ! command -v emcmake >/dev/null 2>&1; then
   echo "  source /path/to/emsdk/emsdk_env.sh" >&2
   exit 1
 fi
-emcmake cmake .. -DCMAKE_BUILD_TYPE=Release
+cmake_args=(-DCMAKE_BUILD_TYPE=Release)
+if [ "${ORACLE_ZENO_DEBUG:-}" = "1" ] || [ "${ORACLE_ZENO_DEBUG:-}" = "ON" ]; then
+  cmake_args+=(-DORACLE_ZENO_DEBUG=ON)
+fi
+emcmake cmake .. "${cmake_args[@]}"
 cmake --build . --parallel

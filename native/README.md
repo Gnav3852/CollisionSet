@@ -19,7 +19,18 @@ From the repository root:
 npm run build:wasm
 ```
 
-This configures `native/build` with `emcmake` and copies the artifacts into `src/wasm/`.
+### Zeno diagnostics (optional)
+
+To compile with the **circuit breaker** and verbose pair/quadratic `std::cout` logging (browser devtools console), enable the CMake option before building:
+
+```bash
+ORACLE_ZENO_DEBUG=1 npm run build:wasm
+# or: npm run build:wasm:debug
+```
+
+Leave this **off** for normal dev and production artifacts; it is only for diagnosing micro-collision / heap churn.
+
+Both commands configure `native/build` with `emcmake` and copy artifacts into `src/wasm/`. After pulling C++ changes (heap purge, peek impact, separation nudge, etc.), run a wasm build again so `oracle.wasm` exports stay in sync with [`src/oracleWasm.ts`](../src/oracleWasm.ts).
 
 ## Layout
 

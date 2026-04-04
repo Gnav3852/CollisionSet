@@ -62,6 +62,8 @@ type EmscriptenModule = {
   _oracle_get_sim_time(ctx: number): number;
   _oracle_get_particle_count(ctx: number): number;
   _oracle_step(ctx: number, maxSteps: number): number;
+  _oracle_purge_heap?(ctx: number): void;
+  _oracle_peek_impact?(ctx: number, outX: number, outY: number): number;
   _oracle_particles_ptr(ctx: number): number;
   _oracle_heap_size(ctx: number): number;
   _oracle_peek_valid(ctx: number): number;
@@ -177,6 +179,42 @@ export class WasmOracle {
     this.mod._oracle_step(this.ctx, maxSteps);
   }
 
+  /** Remove heap rows with event time strictly before current sim_time (UI sync). */
+  purgeHeapPastSimTime(): void {
+    const f = this.mod._oracle_purge_heap;
+    if (typeof f !== "function") {
+      return;
+    }
+    f(this.ctx);
+  }
+
+  /** World-space impact point for the next valid event (wall contact on arena edge, or pair rim). */
+  peekNextImpact(): { x: number; y: number } | null {
+    const m = this.mod;
+    const peekImpact = m._oracle_peek_impact;
+    if (typeof peekImpact !== "function") {
+      return null;
+    }
+    const p = m._malloc(16);
+    if (!p) {
+      return null;
+    }
+    try {
+      const ok = peekImpact(this.ctx, p, p + 8);
+      if (!ok) {
+        return null;
+      }
+      const f64 = m.HEAPF64;
+      if (!f64) {
+        return null;
+      }
+      const i = p >>> 3;
+      return { x: f64[i], y: f64[i + 1] };
+    } finally {
+      m._free(p);
+    }
+  }
+
   /** Position at sim time `t` using linear motion from C++ particle state. */
   posAt(index: number, t: number): { x: number; y: number } {
     const ptr = this.mod._oracle_particles_ptr(this.ctx);
@@ -196,6 +234,14 @@ export class WasmOracle {
     const base = ptr + index * PARTICLE_BYTE_STRIDE;
     const d = new DataView(this.heapBuffer(), base, PARTICLE_BYTE_STRIDE);
     return d.getFloat64(32, true);
+  }
+
+  /** Current velocity (constant between collision events). */
+  velocityAt(index: number): { vx: number; vy: number } {
+    const ptr = this.mod._oracle_particles_ptr(this.ctx);
+    const base = ptr + index * PARTICLE_BYTE_STRIDE;
+    const d = new DataView(this.heapBuffer(), base, PARTICLE_BYTE_STRIDE);
+    return { vx: d.getFloat64(16, true), vy: d.getFloat64(24, true) };
   }
 
   peekNextTime(): number | null {
