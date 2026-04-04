@@ -4,11 +4,22 @@ A **discrete-event simulation (DES)** for 2D elastic disks in a box. The **Oracl
 
 Photos and Sweep Frames:
 
+Ex 1: 
 <img width="2410" height="1388" alt="image" src="https://github.com/user-attachments/assets/a5358b19-b801-4c30-8803-2a0db950c604" />
 
 <img width="2398" height="1380" alt="image" src="https://github.com/user-attachments/assets/157032ea-bf48-416c-a6b5-cebeacad1b7a" />
 
 <img width="2460" height="1400" alt="image" src="https://github.com/user-attachments/assets/f847f3ae-12be-4e46-8b56-333ba91fe8df" />
+
+Ex2: 
+
+<img width="2630" height="1370" alt="image" src="https://github.com/user-attachments/assets/3bfe1dab-2547-408f-bcd5-630ba0359694" />
+
+<img width="2556" height="1488" alt="image" src="https://github.com/user-attachments/assets/282d3ed0-6332-4bae-999c-b2a8617559db" />
+
+<img width="2614" height="1344" alt="image" src="https://github.com/user-attachments/assets/ee36b3e4-ee84-4502-80b0-91e32403f4ef" />
+
+<img width="2528" height="1454" alt="image" src="https://github.com/user-attachments/assets/2dfeb15e-99c1-4e87-ba3a-e59ab9529586" />
 
 
 
