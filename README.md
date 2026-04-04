@@ -2,6 +2,16 @@
 
 A **discrete-event simulation (DES)** for 2D elastic disks in a box. The **Oracle** advances exact collision times (priority queue + analytic hit tests) in **C++ compiled to WebAssembly**; the **Ticker** is a Vite + TypeScript canvas UI that interpolates motion for display.
 
+Photos and Sweep Frames:
+
+<img width="2410" height="1388" alt="image" src="https://github.com/user-attachments/assets/a5358b19-b801-4c30-8803-2a0db950c604" />
+
+<img width="2398" height="1380" alt="image" src="https://github.com/user-attachments/assets/157032ea-bf48-416c-a6b5-cebeacad1b7a" />
+
+<img width="2460" height="1400" alt="image" src="https://github.com/user-attachments/assets/f847f3ae-12be-4e46-8b56-333ba91fe8df" />
+
+
+
 ## Quick start
 
 ```bash
