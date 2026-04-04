@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Vite / production build
+dist/
+.vite/
+
+# TypeScript
+*.tsbuildinfo
+
+# Emscripten / CMake (always regenerate with npm run build:wasm)
+native/build/
+
+# Local env & secrets (never commit)
+.env
+.env.*
+!.env.example
+
+# Logs & debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editors (uncomment if you don’t want these in the repo)
+# .idea/
+# *.swp
+# *.swo
+
+# Tests / coverage (if you add them later)
+coverage/
+
+# Optional: ignore built WASM so clones must run `npm run build:wasm`
+# (Remove these lines if you prefer to commit oracle.js + oracle.wasm)
+# src/wasm/oracle.js
+# src/wasm/oracle.wasm

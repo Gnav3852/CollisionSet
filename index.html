@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Oracle Engine</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #0f1419;
+        color: #c8d0d8;
+        font-family: ui-sans-serif, system-ui, sans-serif;
+        padding: 1rem;
+      }
+      .app {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1.25rem;
+        align-items: flex-start;
+        justify-content: center;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .main-col {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+      }
+      h1 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0;
+        letter-spacing: 0.02em;
+      }
+      #hud {
+        font-variant-numeric: tabular-nums;
+        font-size: 0.8rem;
+        opacity: 0.88;
+        text-align: center;
+        max-width: 800px;
+        line-height: 1.45;
+      }
+      canvas {
+        display: block;
+        border-radius: 8px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+        background: #1a222c;
+      }
+      .side {
+        width: min(100%, 320px);
+        background: #151c24;
+        border: 1px solid #2a3544;
+        border-radius: 10px;
+        padding: 0.85rem 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+        /* Keep sidebar within viewport; queue scrolls inside its box only. */
+        max-height: min(calc(100dvh - 2rem), 900px);
+        min-height: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+      }
+      .queue-section {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+        /* Fixed footprint so slider block doesn’t jump when the heap is empty/small. */
+        min-height: 0;
+      }
+      .controls-stack {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.9rem;
+        position: relative;
+        z-index: 2;
+        padding-top: 0.25rem;
+        border-top: 1px solid #2a3544;
+      }
+      .side h2 {
+        margin: 0;
+        font-size: 0.72rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #8a96a8;
+      }
+      .control {
+        display: flex;
+        flex-direction: column;
+        gap: 0.35rem;
+      }
+      .control label {
+        font-size: 0.78rem;
+        color: #a8b4c4;
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.5rem;
+      }
+      .control label span.val {
+        font-variant-numeric: tabular-nums;
+        color: #7dd3c0;
+        font-size: 0.75rem;
+      }
+      input[type="range"] {
+        width: 100%;
+        accent-color: #5eb8a8;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+      }
+      .row input[type="checkbox"] {
+        accent-color: #5eb8a8;
+      }
+      #queue-wrap {
+        flex: 0 0 auto;
+        height: 220px;
+        min-height: 220px;
+        max-height: 220px;
+        overflow-x: hidden;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+        border: 1px solid #2a3544;
+        border-radius: 6px;
+        background: #0f1419;
+        font-size: 0.68rem;
+        font-variant-numeric: tabular-nums;
+        line-height: 1.35;
+        touch-action: pan-y;
+      }
+      #queue-wrap table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      #queue-wrap th,
+      #queue-wrap td {
+        padding: 0.2rem 0.45rem;
+        text-align: left;
+        border-bottom: 1px solid #222b36;
+      }
+      #queue-wrap th {
+        position: sticky;
+        top: 0;
+        background: #1a222c;
+        color: #8a96a8;
+        font-weight: 600;
+        font-size: 0.62rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      #queue-wrap tr:nth-child(even) td {
+        background: rgba(255, 255, 255, 0.02);
+      }
+      .muted {
+        color: #6a7688;
+        font-size: 0.65rem;
+      }
+      kbd {
+        font-family: ui-monospace, monospace;
+        font-size: 0.62rem;
+        padding: 0.08rem 0.28rem;
+        border-radius: 3px;
+        background: #222b36;
+        border: 1px solid #3d4a5c;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <div class="main-col">
+        <h1>Oracle Engine</h1>
+        <div id="hud">sim_time: — · display: — · heap: —</div>
+        <canvas id="sim" width="800" height="560"></canvas>
+      </div>
+      <aside class="side" aria-label="Simulation controls">
+        <div class="queue-section">
+          <h2>Priority queue</h2>
+          <p class="muted">Sorted by event time (stale entries disappear when popped).</p>
+          <div id="queue-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>t</th>
+                  <th>kind</th>
+                  <th>detail</th>
+                </tr>
+              </thead>
+              <tbody id="queue-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="controls-stack">
+        <div class="control">
+          <h2>Simulation</h2>
+          <label>
+            Oracle steps / frame
+            <span class="val" id="steps-val">—</span>
+          </label>
+          <input type="range" id="steps" min="0" max="12" value="2" step="1" />
+        </div>
+        <div class="control">
+          <label>
+            Display sweep (seconds)
+            <span class="val" id="sweep-val">—</span>
+          </label>
+          <input type="range" id="sweep" min="5" max="120" value="45" step="1" />
+          <p class="muted" style="margin: 0; line-height: 1.35">
+            Keys: <kbd>Space</kbd> pause · <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> sweep
+            <span class="muted">(hold Shift for bigger steps)</span>
+          </p>
+        </div>
+        <div class="row">
+          <input type="checkbox" id="pause-sim" />
+          <label for="pause-sim" style="margin: 0">Pause Oracle (freeze physics)</label>
+        </div>
+        <div class="control">
+          <h2>Display time</h2>
+          <label>
+            Scrub between sim → next event
+            <span class="val" id="scrub-val">—</span>
+          </label>
+          <input type="range" id="scrub" min="0" max="1000" value="0" step="1" />
+        </div>
+        <div class="row">
+          <input type="checkbox" id="scrub-lock" />
+          <label for="scrub-lock" style="margin: 0">Manual scrub (ignore auto sweep)</label>
+        </div>
+        </div>
+      </aside>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
