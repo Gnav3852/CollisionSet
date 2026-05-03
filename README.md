@@ -13,18 +13,10 @@
 
 ## Screenshots
 
-<p align="center">
-  <img width="800" alt="CollisionSet UI — presets, 2D arena, trails, HUD" src="https://github.com/user-attachments/assets/3bfe1dab-2547-408f-bcd5-630ba0359694" />
-</p>
+<img width="3024" height="1736" alt="image" src="https://github.com/user-attachments/assets/c93ebcb7-d05c-4d29-88cd-7404625cc1f8" />
+<img width="3024" height="1724" alt="image" src="https://github.com/user-attachments/assets/324e32e0-a924-4a4f-a01c-4f57f40aa7a0" />
+<img width="3004" height="1708" alt="image" src="https://github.com/user-attachments/assets/8431c612-b81b-43b7-960d-4382b32613bd" />
 
-Additional captures (2D arena, heatmap, demon, 3D):
-
-<img width="800" alt="" src="https://github.com/user-attachments/assets/a5358b19-b801-4c30-8803-2a0db950c604" />
-<img width="800" alt="" src="https://github.com/user-attachments/assets/157032ea-bf48-416c-a6b5-cebeacad1b7a" />
-<img width="800" alt="" src="https://github.com/user-attachments/assets/f847f3ae-12be-4e46-8b56-333ba91fe8df" />
-<img width="800" alt="" src="https://github.com/user-attachments/assets/282d3ed0-6332-4bae-999c-b2a8617559db" />
-<img width="800" alt="" src="https://github.com/user-attachments/assets/ee36b3e4-ee84-4502-80b0-91e32403f4ef" />
-<img width="800" alt="" src="https://github.com/user-attachments/assets/2dfeb15e-99c1-4e87-ba3a-e59ab9529586" />
 
 ## Quick start
 
