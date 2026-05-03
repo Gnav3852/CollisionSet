@@ -4,6 +4,7 @@ A **discrete-event simulation (DES)** for 2D elastic disks in a box. The **Oracl
 
 Photos and Sweep Frames:
 
+<<<<<<< HEAD
 Ex 1: 
 <img width="2410" height="1388" alt="image" src="https://github.com/user-attachments/assets/a5358b19-b801-4c30-8803-2a0db950c604" />
 
@@ -23,6 +24,8 @@ Ex2:
 
 
 
+=======
+>>>>>>> 841acfb (read me)
 ## Quick start
 
 ```bash
@@ -38,7 +41,7 @@ If **Emscripten** lives as a sibling folder `../emsdk` (same parent directory as
 npm run dev:emsdk
 ```
 
-That runs [`scripts/dev-with-emsdk.sh`](scripts/dev-with-emsdk.sh) (sources `../emsdk/emsdk_env.sh`, then `npm run dev`). If emsdk is elsewhere, set `EMSDK_ENV` to the full path of `emsdk_env.sh` before running the script.
+That runs `[scripts/dev-with-emsdk.sh](scripts/dev-with-emsdk.sh)` (sources `../emsdk/emsdk_env.sh`, then `npm run dev`). If emsdk is elsewhere, set `EMSDK_ENV` to the full path of `emsdk_env.sh` before running the script.
 
 The repo includes a small **stub** `src/wasm/oracle.js` so the app loads before you build native code. For the real physics core, build WASM once (see below).
 
@@ -51,17 +54,19 @@ source /path/to/emsdk/emsdk_env.sh   # each new terminal
 npm run build:wasm
 ```
 
-This writes `src/wasm/oracle.js` and `src/wasm/oracle.wasm`. Details: [`native/README.md`](native/README.md).
+This writes `src/wasm/oracle.js` and `src/wasm/oracle.wasm`. Details: `[native/README.md](native/README.md)`.
 
 ## Scripts
 
-| Command | Description |
-|--------|-------------|
-| `npm run dev` | Dev server with HMR |
-| `npm run dev:emsdk` | Source `../emsdk/emsdk_env.sh`, then dev server (see script) |
-| `npm run build` | Typecheck + production bundle (`dist/`) |
-| `npm run preview` | Serve `dist/` locally |
-| `npm run build:wasm` | Compile C++ → `src/wasm/` (requires `emcmake`) |
+
+| Command              | Description                                                  |
+| -------------------- | ------------------------------------------------------------ |
+| `npm run dev`        | Dev server with HMR                                          |
+| `npm run dev:emsdk`  | Source `../emsdk/emsdk_env.sh`, then dev server (see script) |
+| `npm run build`      | Typecheck + production bundle (`dist/`)                      |
+| `npm run preview`    | Serve `dist/` locally                                        |
+| `npm run build:wasm` | Compile C++ → `src/wasm/` (requires `emcmake`)               |
+
 
 After changing **C++**, run `npm run build:wasm` again before expecting updated behavior in the browser.
 
@@ -89,3 +94,4 @@ TypeScript reference implementations (`src/oracle.ts`, `src/collision-math.ts`, 
 
 - **Node.js** 18+ (for Vite 6)
 - **Emscripten + CMake** — only if you run `npm run build:wasm`
+

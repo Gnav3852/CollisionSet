@@ -8,70 +8,130 @@
       * {
         box-sizing: border-box;
       }
+      :root {
+        --neon: #00d4ff;
+        --neon-soft: #60a5fa;
+        --neon-dim: rgba(0, 212, 255, 0.35);
+        --bg-deep: #020611;
+        --bg-mid: #0a1628;
+        --panel: #081628;
+        --panel-edge: #123156;
+        --text: #d6e7fb;
+        --text-muted: #6e8bb8;
+        --text-faint: #3d5a80;
+      }
       body {
         margin: 0;
         min-height: 100vh;
-        background: #0f1419;
-        color: #c8d0d8;
+        background:
+          radial-gradient(ellipse at 20% 0%, rgba(0, 140, 255, 0.18), transparent 60%),
+          radial-gradient(ellipse at 80% 100%, rgba(0, 212, 255, 0.12), transparent 55%),
+          radial-gradient(circle at 50% 50%, var(--bg-mid), var(--bg-deep) 75%);
+        background-attachment: fixed;
+        color: var(--text);
         font-family: ui-sans-serif, system-ui, sans-serif;
         padding: 1rem;
       }
       .app {
-        display: flex;
-        flex-wrap: wrap;
+        display: grid;
+        grid-template-columns: 300px minmax(0, 1fr) 320px;
         gap: 1.25rem;
-        align-items: flex-start;
-        justify-content: center;
-        max-width: 1200px;
+        align-items: start;
+        max-width: 1500px;
         margin: 0 auto;
+      }
+      @media (max-width: 1180px) {
+        .app {
+          grid-template-columns: 1fr;
+          max-width: 860px;
+        }
       }
       .main-col {
         display: flex;
         flex-direction: column;
         align-items: center;
         gap: 0.5rem;
+        min-width: 0;
       }
       h1 {
         font-size: 1.1rem;
         font-weight: 600;
         margin: 0;
-        letter-spacing: 0.02em;
+        letter-spacing: 0.04em;
+        color: var(--neon);
+        text-shadow: 0 0 12px var(--neon-dim);
       }
       #hud {
         font-variant-numeric: tabular-nums;
         font-size: 0.8rem;
-        opacity: 0.88;
+        opacity: 0.92;
         text-align: center;
         max-width: 800px;
         line-height: 1.45;
+        color: var(--text);
+      }
+      #hud strong {
+        color: var(--neon);
+        text-shadow: 0 0 8px var(--neon-dim);
+        font-weight: 600;
+      }
+      #speed-legend {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.7rem;
+        color: var(--text-muted);
+        margin-top: 0.15rem;
+      }
+      #speed-legend .bar {
+        width: 140px;
+        height: 8px;
+        border-radius: 4px;
+        background: linear-gradient(
+          to right,
+          hsl(240, 95%, 58%),
+          hsl(180, 95%, 58%),
+          hsl(120, 95%, 58%),
+          hsl(60, 95%, 58%),
+          hsl(0, 95%, 58%)
+        );
+        box-shadow: 0 0 10px rgba(0, 212, 255, 0.25);
+        border: 1px solid var(--panel-edge);
       }
       canvas {
         display: block;
-        border-radius: 8px;
-        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
-        background: #1a222c;
+        border-radius: 10px;
+        background:
+          radial-gradient(ellipse at 50% 40%, #0b1f3c, #050d1c 80%);
+        box-shadow:
+          0 0 0 1px var(--panel-edge),
+          0 0 24px rgba(0, 180, 255, 0.18),
+          0 8px 40px rgba(0, 0, 0, 0.65),
+          inset 0 0 60px rgba(0, 140, 255, 0.06);
       }
       .side {
-        width: min(100%, 320px);
-        background: #151c24;
-        border: 1px solid #2a3544;
-        border-radius: 10px;
+        width: 100%;
+        justify-self: stretch;
+        background: linear-gradient(180deg, rgba(10, 26, 48, 0.9), rgba(6, 16, 32, 0.9));
+        border: 1px solid var(--panel-edge);
+        border-radius: 12px;
         padding: 0.85rem 1rem;
         display: flex;
         flex-direction: column;
         gap: 0.9rem;
-        /* Keep sidebar within viewport; queue scrolls inside its box only. */
         max-height: min(calc(100dvh - 2rem), 900px);
         min-height: 0;
         overflow-x: hidden;
         overflow-y: auto;
+        box-shadow:
+          0 0 0 1px rgba(0, 212, 255, 0.05),
+          0 0 32px rgba(0, 140, 255, 0.06);
       }
       .queue-section {
         flex: 0 0 auto;
         display: flex;
         flex-direction: column;
         gap: 0.35rem;
-        /* Fixed footprint so slider block doesn’t jump when the heap is empty/small. */
         min-height: 0;
       }
       .controls-stack {
@@ -81,16 +141,17 @@
         gap: 0.9rem;
         position: relative;
         z-index: 2;
-        padding-top: 0.25rem;
-        border-top: 1px solid #2a3544;
+        padding-top: 0.6rem;
+        border-top: 1px solid var(--panel-edge);
       }
       .side h2 {
         margin: 0;
         font-size: 0.72rem;
         font-weight: 600;
         text-transform: uppercase;
-        letter-spacing: 0.08em;
-        color: #8a96a8;
+        letter-spacing: 0.12em;
+        color: var(--neon);
+        text-shadow: 0 0 8px var(--neon-dim);
       }
       .control {
         display: flex;
@@ -99,7 +160,7 @@
       }
       .control label {
         font-size: 0.78rem;
-        color: #a8b4c4;
+        color: var(--text);
         display: flex;
         justify-content: space-between;
         align-items: baseline;
@@ -107,21 +168,23 @@
       }
       .control label span.val {
         font-variant-numeric: tabular-nums;
-        color: #7dd3c0;
+        color: var(--neon);
+        text-shadow: 0 0 6px var(--neon-dim);
         font-size: 0.75rem;
       }
       input[type="range"] {
         width: 100%;
-        accent-color: #5eb8a8;
+        accent-color: var(--neon);
       }
       .row {
         display: flex;
         align-items: center;
         gap: 0.5rem;
         font-size: 0.8rem;
+        color: var(--text);
       }
       .row input[type="checkbox"] {
-        accent-color: #5eb8a8;
+        accent-color: var(--neon);
       }
       #queue-wrap {
         flex: 0 0 auto;
@@ -131,13 +194,14 @@
         overflow-x: hidden;
         overflow-y: auto;
         overscroll-behavior: contain;
-        border: 1px solid #2a3544;
-        border-radius: 6px;
-        background: #0f1419;
+        border: 1px solid var(--panel-edge);
+        border-radius: 8px;
+        background: #030a17;
         font-size: 0.68rem;
         font-variant-numeric: tabular-nums;
         line-height: 1.35;
         touch-action: pan-y;
+        box-shadow: inset 0 0 24px rgba(0, 140, 255, 0.06);
       }
       #queue-wrap table {
         width: 100%;
@@ -147,41 +211,361 @@
       #queue-wrap td {
         padding: 0.2rem 0.45rem;
         text-align: left;
-        border-bottom: 1px solid #222b36;
+        border-bottom: 1px solid rgba(18, 49, 86, 0.6);
       }
       #queue-wrap th {
         position: sticky;
         top: 0;
-        background: #1a222c;
-        color: #8a96a8;
+        background: linear-gradient(180deg, #0a1f3a, #061528);
+        color: var(--neon);
         font-weight: 600;
         font-size: 0.62rem;
         text-transform: uppercase;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.08em;
+        box-shadow: 0 1px 0 var(--panel-edge);
       }
       #queue-wrap tr:nth-child(even) td {
-        background: rgba(255, 255, 255, 0.02);
+        background: rgba(0, 140, 255, 0.04);
+      }
+      #queue-wrap tr:hover td {
+        background: rgba(0, 212, 255, 0.08);
       }
       .muted {
-        color: #6a7688;
+        color: var(--text-muted);
         font-size: 0.65rem;
       }
       kbd {
         font-family: ui-monospace, monospace;
         font-size: 0.62rem;
-        padding: 0.08rem 0.28rem;
+        padding: 0.08rem 0.3rem;
         border-radius: 3px;
-        background: #222b36;
-        border: 1px solid #3d4a5c;
+        background: #0c2142;
+        border: 1px solid var(--panel-edge);
+        color: var(--neon);
+        box-shadow: 0 0 6px rgba(0, 212, 255, 0.15);
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: var(--panel-edge);
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: var(--neon-soft);
+      }
+      .mass-row {
+        display: grid;
+        grid-template-columns: auto auto 1fr auto;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.72rem;
+        color: var(--text);
+      }
+      .mass-row input[type="range"] {
+        width: 100%;
+      }
+      .mass-row .swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        box-shadow: 0 0 6px currentColor;
+      }
+      .mass-row .mass-val {
+        font-variant-numeric: tabular-nums;
+        color: var(--neon);
+        text-shadow: 0 0 6px var(--neon-dim);
+        min-width: 2.6rem;
+        text-align: right;
+      }
+      .side-left {
+        grid-column: 1;
+      }
+      .preset-section {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.55rem;
+      }
+      .preset-list {
+        display: flex;
+        flex-direction: column;
+        gap: 0.4rem;
+      }
+      .preset-item {
+        appearance: none;
+        text-align: left;
+        padding: 0.55rem 0.7rem;
+        border-radius: 8px;
+        border: 1px solid var(--panel-edge);
+        background: linear-gradient(
+          180deg,
+          rgba(12, 33, 66, 0.7),
+          rgba(6, 21, 40, 0.7)
+        );
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.78rem;
+        cursor: pointer;
+        transition: border-color 140ms ease, box-shadow 140ms ease,
+          transform 120ms ease, background 140ms ease;
+      }
+      .preset-item:hover {
+        border-color: var(--neon);
+        box-shadow: 0 0 14px var(--neon-dim);
+        background: linear-gradient(
+          180deg,
+          rgba(0, 180, 255, 0.12),
+          rgba(0, 120, 220, 0.08)
+        );
+      }
+      .preset-item:active {
+        transform: scale(0.98);
+      }
+      .preset-item.active {
+        border-color: var(--neon);
+        box-shadow: 0 0 18px var(--neon-dim), inset 0 0 12px rgba(0, 212, 255, 0.1);
+        color: var(--neon);
+        text-shadow: 0 0 6px var(--neon-dim);
+      }
+      .preset-item .preset-hint {
+        display: block;
+        font-size: 0.62rem;
+        color: var(--text-muted);
+        margin-top: 0.18rem;
+      }
+      .preset-desc {
+        min-height: 2.2rem;
+        line-height: 1.4;
+        font-style: italic;
+      }
+      .btn-neon {
+        appearance: none;
+        padding: 0.55rem 0.8rem;
+        border-radius: 8px;
+        border: 1px solid var(--neon);
+        background: linear-gradient(
+          180deg,
+          rgba(0, 212, 255, 0.15),
+          rgba(0, 100, 200, 0.08)
+        );
+        color: var(--neon);
+        font-family: inherit;
+        font-size: 0.78rem;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        cursor: pointer;
+        text-shadow: 0 0 6px var(--neon-dim);
+        box-shadow: 0 0 10px var(--neon-dim);
+        transition: box-shadow 140ms ease, transform 120ms ease, background 140ms ease;
+      }
+      .btn-neon:hover {
+        background: linear-gradient(
+          180deg,
+          rgba(0, 212, 255, 0.28),
+          rgba(0, 100, 200, 0.15)
+        );
+        box-shadow: 0 0 18px var(--neon-dim);
+      }
+      .btn-neon:active {
+        transform: scale(0.97);
+      }
+      .btn-neon.pulse {
+        animation: baseline-pulse 600ms ease;
+      }
+      @keyframes baseline-pulse {
+        0% {
+          box-shadow: 0 0 10px var(--neon-dim);
+        }
+        40% {
+          box-shadow: 0 0 28px rgba(0, 212, 255, 0.85);
+        }
+        100% {
+          box-shadow: 0 0 10px var(--neon-dim);
+        }
+      }
+      .demon-stats {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.25rem 0.5rem;
+        font-size: 0.68rem;
+        font-variant-numeric: tabular-nums;
+        padding: 0.45rem 0.6rem;
+        border: 1px solid var(--panel-edge);
+        border-radius: 8px;
+        background: #030a17;
+      }
+      .demon-stats .hdr {
+        color: var(--neon);
+        font-size: 0.6rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        font-weight: 600;
+        text-shadow: 0 0 6px var(--neon-dim);
+      }
+      .demon-stats .val {
+        color: var(--text);
+      }
+      .demon-stats .val strong {
+        color: var(--neon);
+        font-weight: 600;
+        text-shadow: 0 0 6px var(--neon-dim);
+      }
+      .entropy-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 0.2rem 0.6rem;
+        font-size: 0.68rem;
+        font-variant-numeric: tabular-nums;
+      }
+      .entropy-grid .k {
+        color: var(--text-muted);
+      }
+      .entropy-grid .v {
+        color: var(--neon);
+        text-shadow: 0 0 6px var(--neon-dim);
+        text-align: right;
+      }
+      .door-btn {
+        position: relative;
+      }
+      .door-btn.is-open {
+        border-color: #4ade80;
+        color: #86efac;
+        text-shadow: 0 0 6px rgba(74, 222, 128, 0.5);
+        box-shadow: 0 0 14px rgba(74, 222, 128, 0.35);
+        background: linear-gradient(
+          180deg,
+          rgba(74, 222, 128, 0.18),
+          rgba(20, 120, 80, 0.08)
+        );
+      }
+      #strip-chart {
+        display: block;
+        border-radius: 8px;
+        background: #040c1c;
+        box-shadow:
+          0 0 0 1px var(--panel-edge),
+          inset 0 0 24px rgba(0, 140, 255, 0.06);
+        margin-top: 0.25rem;
+      }
+      #strip-legend {
+        display: flex;
+        gap: 0.8rem;
+        font-size: 0.65rem;
+        color: var(--text-muted);
+        margin-top: 0.1rem;
+      }
+      #strip-legend .swatch {
+        display: inline-block;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        margin-right: 0.25rem;
+        vertical-align: middle;
+        box-shadow: 0 0 6px currentColor;
+      }
+      .view-3d-wrap {
+        width: 800px;
+        height: 560px;
+        max-width: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow:
+          0 0 0 1px var(--panel-edge),
+          0 0 24px rgba(0, 180, 255, 0.18),
+          0 8px 40px rgba(0, 0, 0, 0.65);
+      }
+      .view-3d-wrap canvas {
+        display: block;
+        width: 100% !important;
+        height: 100% !important;
+        border-radius: 0;
+        box-shadow: none;
+      }
+      .sim-wrap {
+        position: relative;
+        width: 800px;
+        max-width: 100%;
+      }
+      .controls-disabled {
+        opacity: 0.38;
+        pointer-events: none;
       }
     </style>
   </head>
   <body>
     <div class="app">
+      <aside class="side side-left" aria-label="Preset scenarios">
+        <div class="preset-section">
+          <h2>Presets</h2>
+          <p class="muted">Click to load. Mass sliders and trails reset.</p>
+          <div id="preset-list" class="preset-list"></div>
+          <p id="preset-desc" class="muted preset-desc">—</p>
+        </div>
+        <div class="controls-stack">
+          <h2>HUD</h2>
+          <button type="button" id="reset-baseline" class="btn-neon">
+            Reset KE baseline
+          </button>
+          <p class="muted" style="margin: 0; line-height: 1.35">
+            Zeros the drift readout from current state. Useful after tweaking mass
+            or restitution — drift becomes a clean leak-detector again.
+          </p>
+        </div>
+        <div class="controls-stack" id="demon-panel">
+          <h2>Maxwell's Demon</h2>
+          <div class="row">
+            <input type="checkbox" id="divider-active" />
+            <label for="divider-active" style="margin: 0">Divider on</label>
+          </div>
+          <button type="button" id="door-btn" class="btn-neon door-btn">Door: closed</button>
+          <div class="control">
+            <label>
+              Gap size
+              <span class="val" id="gap-val">—</span>
+            </label>
+            <input type="range" id="gap" min="20" max="260" value="90" step="2" />
+          </div>
+          <div class="row">
+            <input type="checkbox" id="demon-auto" />
+            <label for="demon-auto" style="margin: 0">Demon (auto sort)</label>
+          </div>
+          <p class="muted" style="margin: 0; line-height: 1.3">
+            Hot balls go right, cold balls go left. Each gate toggle counts a bit
+            of info — Landauer's minimum cost of sorting.
+          </p>
+          <div class="demon-stats" id="demon-stats">
+            <span class="hdr">Left</span><span class="hdr">Right</span>
+            <span class="val" id="stat-l">N=0 · KE=0</span>
+            <span class="val" id="stat-r">N=0 · KE=0</span>
+            <span class="val" id="t-l">T_L=—</span>
+            <span class="val" id="t-r">T_R=—</span>
+          </div>
+          <div class="entropy-grid" id="entropy-grid">
+            <span class="k">ΔS_gas</span><span class="v" id="s-gas">—</span>
+            <span class="k">ΔS_info (bits)</span><span class="v" id="s-info">0</span>
+            <span class="k">toggles</span><span class="v" id="s-toggles">0</span>
+          </div>
+        </div>
+      </aside>
       <div class="main-col">
         <h1>Oracle Engine</h1>
         <div id="hud">sim_time: — · display: — · heap: —</div>
-        <canvas id="sim" width="800" height="560"></canvas>
+        <div class="sim-wrap">
+          <canvas id="sim" width="800" height="560"></canvas>
+          <div id="view-3d-wrap" class="view-3d-wrap" hidden aria-hidden="true"></div>
+        </div>
+        <canvas id="strip-chart" width="800" height="80"></canvas>
+        <div id="strip-legend">
+          <span><span class="swatch" style="color: #60a5fa; background: #60a5fa"></span>T_L (left half)</span>
+          <span><span class="swatch" style="color: #f472b6; background: #f472b6"></span>T_R (right half)</span>
+          <span><span class="swatch" style="color: #facc15; background: #facc15"></span>|T_L − T_R|</span>
+        </div>
       </div>
       <aside class="side" aria-label="Simulation controls">
         <div class="queue-section">
@@ -202,6 +586,68 @@
           </div>
         </div>
         <div class="controls-stack">
+        <div class="control" id="sim-space-control">
+          <h2>Simulation space</h2>
+          <div class="row">
+            <input type="checkbox" id="space-3d" />
+            <label for="space-3d" style="margin: 0">3D box (Three.js)</label>
+          </div>
+          <p class="muted" id="space-3d-hint" style="margin: 0; line-height: 1.35">
+            Full axis-aligned box in WASM; orbit the camera. Divider, torus, heatmap, and demon are 2D-only (disabled in 3D).
+          </p>
+        </div>
+        <div class="control">
+          <h2>Physics</h2>
+          <label>
+            Restitution e
+            <span class="val" id="resti-val">1.00</span>
+          </label>
+          <input type="range" id="resti" min="0" max="100" value="100" step="1" />
+          <p class="muted" style="margin: 0; line-height: 1.35">
+            1.0 = elastic (KE conserved) · &lt;1 = inelastic (energy leaks per collision)
+          </p>
+          <label style="display: block; margin-top: 0.65rem">
+            Gravity +Y (px/s²)
+            <span class="val" id="gravity-y-val">0</span>
+          </label>
+          <input type="range" id="gravity-y" min="0" max="800" value="0" step="10" />
+          <p class="muted" style="margin: 0; line-height: 1.35">
+            Downward in canvas space; 2D/3D WASM paths. KE readout is kinetic only (not conserved with g).
+          </p>
+        </div>
+        <div class="control" id="mass-controls">
+          <label style="display:block">Masses</label>
+          <div id="mass-rows" style="display:flex;flex-direction:column;gap:0.3rem"></div>
+        </div>
+        <div class="control">
+          <h2>View</h2>
+          <div class="row">
+            <input type="checkbox" id="view-heatmap" checked />
+            <label for="view-heatmap" style="margin: 0">Collision heatmap</label>
+          </div>
+          <div class="row">
+            <input type="checkbox" id="view-tempfield" />
+            <label for="view-tempfield" style="margin: 0">Temperature field</label>
+          </div>
+          <div class="row">
+            <input type="checkbox" id="view-trails" checked />
+            <label for="view-trails" style="margin: 0">Motion trails</label>
+          </div>
+          <div class="row">
+            <input type="checkbox" id="view-ghosts" checked />
+            <label for="view-ghosts" style="margin: 0">Next-event ghosts</label>
+          </div>
+        </div>
+        <div class="control">
+          <h2>Arena</h2>
+          <div class="row">
+            <input type="checkbox" id="torus-mode" />
+            <label for="torus-mode" style="margin: 0">Torus mode (wrap edges)</label>
+          </div>
+          <p class="muted" style="margin: 0; line-height: 1.35">
+            Particles leaving one edge reappear on the opposite side. Wall events disappear; pair predictions use nearest image.
+          </p>
+        </div>
         <div class="control">
           <h2>Simulation</h2>
           <label>
@@ -212,12 +658,13 @@
         </div>
         <div class="control">
           <label>
-            Display sweep (seconds)
+            Time scale (real-s per sim-s)
             <span class="val" id="sweep-val">—</span>
           </label>
-          <input type="range" id="sweep" min="5" max="120" value="8" step="1" />
+          <input type="range" id="sweep" min="5" max="120" value="10" step="1" />
           <p class="muted" style="margin: 0; line-height: 1.35">
-            Keys: <kbd>Space</kbd> pause · <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> sweep
+            1.0 = real-time · higher = slower · lower = faster<br />
+            Keys: <kbd>Space</kbd> pause · <kbd>←</kbd><kbd>→</kbd><kbd>↑</kbd><kbd>↓</kbd> adjust
             <span class="muted">(hold Shift for bigger steps)</span>
           </p>
         </div>

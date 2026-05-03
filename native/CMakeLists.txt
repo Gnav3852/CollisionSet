@@ -32,7 +32,7 @@ target_link_options(oracle_wasm PRIVATE
   "-sENVIRONMENT=web"
   "-sALLOW_MEMORY_GROWTH=1"
   "-sEXPORTED_RUNTIME_METHODS=['ccall','cwrap','HEAPU8','HEAP32','HEAPF64']"
-  "SHELL:-sEXPORTED_FUNCTIONS=[_malloc,_free,_oracle_create,_oracle_destroy,_oracle_set_particle_count,_oracle_set_particle,_oracle_bootstrap,_oracle_get_sim_time,_oracle_get_particle_count,_oracle_get_capacity,_oracle_particles_ptr,_oracle_step,_oracle_purge_heap,_oracle_peek_impact,_oracle_heap_size,_oracle_peek_valid,_oracle_peek_time,_oracle_peek_kind,_oracle_peek_a,_oracle_peek_b,_oracle_peek_wall,_oracle_peek_count_a,_oracle_peek_count_b,_oracle_heap_export]"
+  "SHELL:-sEXPORTED_FUNCTIONS=[_malloc,_free,_oracle_create,_oracle_destroy,_oracle_set_particle_count,_oracle_set_particle,_oracle_set_space_mode,_oracle_get_space_mode,_oracle_set_restitution,_oracle_set_gravity,_oracle_get_gravity,_oracle_set_torus_mode,_oracle_set_divider_active,_oracle_set_door_open,_oracle_set_divider_geometry,_oracle_get_divider_x,_oracle_get_gap_top,_oracle_get_gap_bot,_oracle_get_door_open,_oracle_get_divider_active,_oracle_bootstrap,_oracle_get_sim_time,_oracle_get_particle_count,_oracle_get_capacity,_oracle_particles_ptr,_oracle_step,_oracle_purge_heap,_oracle_peek_impact,_oracle_heap_size,_oracle_peek_valid,_oracle_peek_time,_oracle_peek_kind,_oracle_peek_a,_oracle_peek_b,_oracle_peek_wall,_oracle_peek_count_a,_oracle_peek_count_b,_oracle_heap_export]"
 )
 
 set(WASM_OUT "${CMAKE_CURRENT_SOURCE_DIR}/../src/wasm")

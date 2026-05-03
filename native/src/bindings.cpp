@@ -11,19 +11,20 @@
 #define ORACLE_API
 #endif
 
-using oracle::AxisBounds;
 using oracle::EventKind;
 using oracle::OracleEngine;
+using oracle::SpaceMode;
+using oracle::VolumeBounds;
 using oracle::WallAxis;
 
 extern "C" {
 
 ORACLE_API
-void* oracle_create(int max_n, double minX, double maxX, double minY, double maxY) {
+void* oracle_create(int max_n, double minX, double maxX, double minY, double maxY, double minZ, double maxZ) {
   if (max_n <= 0) {
     return nullptr;
   }
-  const AxisBounds b{minX, maxX, minY, maxY};
+  const VolumeBounds b{minX, maxX, minY, maxY, minZ, maxZ};
   return new OracleEngine(max_n, b);
 }
 
@@ -45,14 +46,32 @@ void oracle_set_particle(void* ctx,
                            int i,
                            double px,
                            double py,
+                           double pz,
                            double vx,
                            double vy,
+                           double vz,
                            double r,
                            double m) {
   if (!ctx) {
     return;
   }
-  static_cast<OracleEngine*>(ctx)->set_particle(i, px, py, vx, vy, r, m);
+  static_cast<OracleEngine*>(ctx)->set_particle(i, px, py, pz, vx, vy, vz, r, m);
+}
+
+ORACLE_API
+void oracle_set_space_mode(void* ctx, int mode) {
+  if (!ctx) {
+    return;
+  }
+  static_cast<OracleEngine*>(ctx)->set_space_mode(mode != 0 ? SpaceMode::XYZ : SpaceMode::XY);
+}
+
+ORACLE_API
+int oracle_get_space_mode(void* ctx) {
+  if (!ctx) {
+    return 0;
+  }
+  return static_cast<OracleEngine*>(ctx)->space_mode() == SpaceMode::XYZ ? 1 : 0;
 }
 
 ORACLE_API
@@ -61,6 +80,105 @@ void oracle_bootstrap(void* ctx) {
     return;
   }
   static_cast<OracleEngine*>(ctx)->bootstrap();
+}
+
+ORACLE_API
+void oracle_set_restitution(void* ctx, double e) {
+  if (!ctx) {
+    return;
+  }
+  static_cast<OracleEngine*>(ctx)->set_restitution(e);
+}
+
+ORACLE_API
+void oracle_set_gravity(void* ctx, double ax, double ay, double az) {
+  if (!ctx) {
+    return;
+  }
+  static_cast<OracleEngine*>(ctx)->set_gravity(ax, ay, az);
+}
+
+ORACLE_API
+void oracle_get_gravity(void* ctx, double* ax, double* ay, double* az) {
+  if (!ctx || !ax || !ay || !az) {
+    return;
+  }
+  const oracle::Vec3 g = static_cast<OracleEngine*>(ctx)->gravity();
+  *ax = g.x;
+  *ay = g.y;
+  *az = g.z;
+}
+
+ORACLE_API
+void oracle_set_torus_mode(void* ctx, int on) {
+  if (!ctx) {
+    return;
+  }
+  static_cast<OracleEngine*>(ctx)->set_torus_mode(on != 0);
+}
+
+ORACLE_API
+void oracle_set_divider_active(void* ctx, int on) {
+  if (!ctx) {
+    return;
+  }
+  static_cast<OracleEngine*>(ctx)->set_divider_active(on != 0);
+}
+
+ORACLE_API
+void oracle_set_door_open(void* ctx, int open) {
+  if (!ctx) {
+    return;
+  }
+  static_cast<OracleEngine*>(ctx)->set_door_open(open != 0);
+}
+
+ORACLE_API
+void oracle_set_divider_geometry(void* ctx, double xs, double gap_top, double gap_bot) {
+  if (!ctx) {
+    return;
+  }
+  static_cast<OracleEngine*>(ctx)->set_divider_geometry(xs, gap_top, gap_bot);
+}
+
+ORACLE_API
+double oracle_get_divider_x(void* ctx) {
+  if (!ctx) {
+    return 0;
+  }
+  return static_cast<OracleEngine*>(ctx)->divider_x();
+}
+
+ORACLE_API
+double oracle_get_gap_top(void* ctx) {
+  if (!ctx) {
+    return 0;
+  }
+  return static_cast<OracleEngine*>(ctx)->gap_top();
+}
+
+ORACLE_API
+double oracle_get_gap_bot(void* ctx) {
+  if (!ctx) {
+    return 0;
+  }
+  return static_cast<OracleEngine*>(ctx)->gap_bot();
+}
+
+ORACLE_API
+int oracle_get_door_open(void* ctx) {
+  if (!ctx) {
+    return 0;
+  }
+  return static_cast<OracleEngine*>(ctx)->door_open() ? 1 : 0;
+}
+
+ORACLE_API
+int oracle_get_divider_active(void* ctx) {
+  if (!ctx) {
+    return 0;
+  }
+  return static_cast<OracleEngine*>(ctx)->divider_active() ? 1 : 0;
 }
 
 ORACLE_API
@@ -114,8 +232,8 @@ void oracle_purge_heap(void* ctx) {
 }
 
 ORACLE_API
-int oracle_peek_impact(void* ctx, double* out_x, double* out_y) {
-  if (!ctx || !out_x || !out_y) {
+int oracle_peek_impact(void* ctx, double* out_x, double* out_y, double* out_z) {
+  if (!ctx || !out_x || !out_y || !out_z) {
     return 0;
   }
   const auto hit = static_cast<OracleEngine*>(ctx)->peek_next_impact();
@@ -124,6 +242,7 @@ int oracle_peek_impact(void* ctx, double* out_x, double* out_y) {
   }
   *out_x = hit->x;
   *out_y = hit->y;
+  *out_z = hit->z;
   return 1;
 }
 
@@ -214,7 +333,7 @@ int oracle_peek_count_b(void* ctx) {
 
 /**
  * Export sorted heap rows into parallel arrays (JS malloc'd wasm memory).
- * kind: 0 pair, 1 wall. wall: 0 L, 1 R, 2 T, 3 B (pair rows use 0).
+ * kind: 0 pair, 1 wall. wall: 0 L, 1 R, 2 T, 3 B, 4 Div, 5 NearZ, 6 FarZ (pair rows use 0).
  * Returns number of rows written (<= max_rows).
  */
 ORACLE_API

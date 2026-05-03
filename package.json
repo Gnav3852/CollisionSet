@@ -12,7 +12,11 @@
     "build:wasm:debug": "ORACLE_ZENO_DEBUG=1 bash scripts/build-wasm.sh"
   },
   "devDependencies": {
+    "@types/three": "^0.172.0",
     "typescript": "~5.7.2",
     "vite": "^6.0.3"
+  },
+  "dependencies": {
+    "three": "^0.172.0"
   }
 }

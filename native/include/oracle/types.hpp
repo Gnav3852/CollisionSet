@@ -18,19 +18,36 @@ struct Vec2 {
   double y = 0;
 };
 
-struct AxisBounds {
+struct Vec3 {
+  double x = 0;
+  double y = 0;
+  double z = 0;
+};
+
+/** Axis-aligned box (2D uses XY only; Z is pinned in SpaceMode::XY). */
+struct VolumeBounds {
   double minX = 0;
   double maxX = 0;
   double minY = 0;
   double maxY = 0;
+  double minZ = 0;
+  double maxZ = 0;
 };
 
-/** POD layout fixed for WASM/TS DataView (64 bytes per particle). */
+/** Must match src/oracleWasm.ts PARTICLE_BYTE_STRIDE and DataView offsets. */
+enum class SpaceMode : std::uint8_t { XY = 0, XYZ = 1 };
+
+/**
+ * POD layout fixed for WASM/TS DataView (80 bytes per particle).
+ * Offsets: pos 0,8,16 | vel 24,32,40 | radius 48 | mass 56 | lastT 64 | counts 72
+ */
 struct alignas(8) Particle {
   double pos_x = 0;
   double pos_y = 0;
+  double pos_z = 0;
   double vel_x = 0;
   double vel_y = 0;
+  double vel_z = 0;
   double radius = 0;
   double mass = 1;
   double last_update_time = 0;
@@ -38,9 +55,17 @@ struct alignas(8) Particle {
   std::int32_t pad = 0;
 };
 
-static_assert(sizeof(Particle) == 64, "Particle layout must match oracleWasm.ts");
+static_assert(sizeof(Particle) == 80, "Particle layout must match oracleWasm.ts");
 
-enum class WallAxis : std::uint8_t { Left, Right, Top, Bottom };
+enum class WallAxis : std::uint8_t {
+  Left,
+  Right,
+  Top,
+  Bottom,
+  Divider,
+  NearZ,
+  FarZ,
+};
 
 enum class EventKind : std::uint8_t { Pair, Wall };
 
